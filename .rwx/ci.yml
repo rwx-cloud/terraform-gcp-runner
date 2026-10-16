@@ -1,0 +1,44 @@
+on:
+  cli:
+    init:
+      commit-sha: ${{ event.git.sha }}
+  github:
+    pull_request:
+      init:
+        commit-sha: ${{ event.git.sha }}
+    push:
+      init:
+        commit-sha: ${{ event.git.sha }}
+
+base:
+  image: ubuntu:24.04
+  config: rwx/base 1.2.0
+
+tasks:
+  - key: code
+    call: git/clone 2.1.0
+    with:
+      repository: https://github.com/rwx-cloud/terraform-google-runner.git
+      ref: ${{ init.commit-sha }}
+      github-token: ${{ github['rwx-cloud'].token }}
+
+  - key: terraform
+    call: hashicorp/install-terraform 1.1.0
+    with:
+      terraform-version: "1.13.1"
+
+  - key: fmt
+    use: [code, terraform]
+    run: terraform fmt -check -recursive -diff
+
+  - key: validate
+    use: [code, terraform]
+    run: |
+      terraform init -backend=false -input=false
+      terraform validate
+
+  - key: test
+    use: [code, terraform]
+    run: |
+      terraform init -backend=false -input=false
+      terraform test
