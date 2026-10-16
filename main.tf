@@ -11,6 +11,8 @@ locals {
 
   provisioning_subject = "rwx:provisioning:${var.rwx_self_hosted_runner_external_id}"
 
+  instance_name_prefix = "rwx-"
+
   subnetwork = regex("^projects/(?P<project>[^/]+)/regions/(?P<region>[^/]+)/subnetworks/(?P<name>[^/]+)$", var.subnetwork)
 
   required_services = toset([
@@ -83,13 +85,34 @@ resource "google_project_iam_custom_role" "provisioning" {
     "compute.instances.setLabels",
     "compute.instances.setMetadata",
     "compute.instances.setServiceAccount",
-    "compute.zoneOperations.get",
   ]
 }
 
+# RWX names every instance it creates, and each instance's boot disk, with this
+# prefix, so the grant cannot touch any other instance in the project.
 resource "google_project_iam_member" "provisioning" {
   project = var.project_id
   role    = google_project_iam_custom_role.provisioning.name
+  member  = "serviceAccount:${google_service_account.provisioning.email}"
+
+  condition {
+    title       = "RWX runner instances only"
+    description = "Instances and disks whose names start with ${local.instance_name_prefix}"
+    expression  = "resource.name.extract('/instances/{name}').startsWith('${local.instance_name_prefix}') || resource.name.extract('/disks/{name}').startsWith('${local.instance_name_prefix}')"
+  }
+}
+
+resource "google_project_iam_custom_role" "operations" {
+  project     = var.project_id
+  role_id     = "rwx_operations_${local.name_suffix}"
+  title       = "RWX operations (${var.rwx_self_hosted_runner_label})"
+  description = "Poll the operations that create and delete RWX self-hosted runner instances."
+  permissions = ["compute.zoneOperations.get"]
+}
+
+resource "google_project_iam_member" "operations" {
+  project = var.project_id
+  role    = google_project_iam_custom_role.operations.name
   member  = "serviceAccount:${google_service_account.provisioning.email}"
 }
 
