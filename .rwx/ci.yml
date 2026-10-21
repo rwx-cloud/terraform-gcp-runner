@@ -16,14 +16,13 @@ base:
 
 tasks:
   - key: code
-    call: git/clone 2.1.0
+    call: git/clone 2.2.0
     with:
       repository: https://github.com/rwx-cloud/terraform-gcp-runner.git
       ref: ${{ init.commit-sha }}
-      github-token: ${{ github['rwx-cloud'].token }}
 
   - key: terraform
-    call: hashicorp/install-terraform 1.1.0
+    call: hashicorp/install-terraform 1.1.2
     with:
       terraform-version: "1.13.1"
 
