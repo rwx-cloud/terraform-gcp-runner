@@ -17,7 +17,7 @@ provider "google" {}
 # cloud.rwx.com. The project_id and subnetwork reference resources in your own
 # Google Cloud organization.
 module "rwx_runner" {
-  source  = "rwx-cloud/runner/google"
+  source  = "rwx-cloud/runner/gcp"
   version = "~> 1.0"
 
   rwx_self_hosted_runner_label       = "prod"

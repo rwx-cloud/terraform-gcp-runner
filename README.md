@@ -1,4 +1,4 @@
-# terraform-google-runner
+# terraform-gcp-runner
 
 Grants [RWX](https://www.rwx.com) permission to provision self-hosted runners in
 your Google Cloud project. Contact [RWX support](https://www.rwx.com/support) to
@@ -12,9 +12,9 @@ launches instances into the subnetwork you already have.
   with short-lived OIDC tokens rather than a service account key. The provider
   only accepts tokens that RWX issues for this runner.
 - **Provisioning service account** (`rwx-provisioning-<id>`) — RWX impersonates
-  this service account to launch and delete runners. It may create, inspect,
-  and delete Compute Engine instances in the project, and it may only launch
-  them into the subnetwork you pass in.
+  this service account to launch and delete runners. It may only create,
+  inspect, and delete Compute Engine instances whose names start with `rwx-`,
+  and it may only launch them into the subnetwork you pass in.
 - **Instance service account** (`rwx-runner-<id>`) — the identity your runner
   instances run as. It starts with no roles; grant your own to give builds
   access to your Google Cloud resources.
@@ -34,7 +34,7 @@ then apply this module with the values it shows you. For example:
 
 ```hcl
 module "rwx_runner" {
-  source  = "rwx-cloud/runner/google"
+  source  = "rwx-cloud/runner/gcp"
   version = "~> 1.0"
 
   rwx_self_hosted_runner_label       = "prod"
@@ -56,7 +56,7 @@ an exact tag:
 
 ```hcl
 module "rwx_runner" {
-  source = "git::https://github.com/rwx-cloud/terraform-google-runner.git?ref=v1.0.0"
+  source = "git::https://github.com/rwx-cloud/terraform-gcp-runner.git?ref=v1.0.0"
   # ...
 }
 ```
@@ -80,7 +80,7 @@ this module did not grant. To upgrade, raise the `version` constraint and re-app
 
 ## Examples
 
-- [Basic](https://github.com/rwx-cloud/terraform-google-runner/tree/main/examples/basic) - A single runner in one project
+- [Basic](https://github.com/rwx-cloud/terraform-gcp-runner/tree/main/examples/basic) - A single runner in one project
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -107,8 +107,10 @@ No modules.
 | [google_compute_subnetwork_iam_member.provisioning](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_subnetwork_iam_member) | resource |
 | [google_iam_workload_identity_pool.rwx](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/iam_workload_identity_pool) | resource |
 | [google_iam_workload_identity_pool_provider.rwx](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/iam_workload_identity_pool_provider) | resource |
+| [google_project_iam_custom_role.operations](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
 | [google_project_iam_custom_role.provisioning](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
 | [google_project_iam_custom_role.subnetwork](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
+| [google_project_iam_member.operations](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
 | [google_project_iam_member.provisioning](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
 | [google_project_service.required](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_service) | resource |
 | [google_service_account.provisioning](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account) | resource |
